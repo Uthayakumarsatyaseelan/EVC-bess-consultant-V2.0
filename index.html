@@ -1,200 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EVC BESS Consultant</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <style>
-        /* Basic reset */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EVC BESS Consultant</title>
 
-        /* Body styling */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #ffffff;  /* White background */
-            padding: 20px;
-        }
+  <!-- Charts + parsers -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js" defer></script>
+  <!-- XLSX for Excel support -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.20.2/xlsx.full.min.js" defer></script>
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        }
+  <style>
+    :root{
+      --orange:#f97316; --orange-dark:#ea580c; --ink:#0f172a; --muted:#64748b; --panel:#f8fafc; --ring:#e2e8f0;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:#fff;color:var(--ink);font:16px/1.5 "Segoe UI",system-ui,-apple-system,sans-serif}
 
-        /* Header */
-        .header {
-            background: #F97316;  /* Orange header */
-            color: white;
-            text-align: center;
-            padding: 30px;
-            border-radius: 8px 8px 0 0;
-        }
+    /* Full-width orange hero */
+    .hero{
+      background:linear-gradient(180deg,var(--orange) 0%, var(--orange-dark) 100%);
+      padding:38px 16px 48px;
+      box-shadow:0 8px 24px rgba(0,0,0,.08);
+      position:sticky; top:0; z-index:10;
+    }
+    .hero-inner{
+      max-width:1200px; margin:0 auto; text-align:center;
+    }
+    .title{
+      margin:0 0 6px; font-size:40px; font-weight:800; color:#fff;
+      -webkit-text-stroke:1px #000; text-shadow:0 2px 0 #000, 2px 0 0 #000, 0 -2px 0 #000, -2px 0 0 #000;
+    }
+    .subtitle{
+      margin:0; font-size:18px; color:#fff;
+      -webkit-text-stroke:.6px #000; text-shadow:0 1px 0 #000;
+      opacity:.98;
+    }
 
-        .header h1 {
-            font-size: 2.5em;
-            font-weight: 700;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px #000000;  /* Black outline for text */
-        }
+    /* Layout */
+    .wrap{max-width:1200px; margin:-28px auto 48px; padding:0 16px}
+    .grid{display:grid; gap:20px; grid-template-columns:380px 1fr}
 
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-            text-shadow: 1px 1px 3px #000000;  /* Black outline for text */
-        }
+    .card{
+      background:#fff; border:1px solid var(--ring); border-radius:16px; box-shadow:0 6px 20px rgba(2,6,23,.05);
+    }
+    .card > .hd{padding:14px 18px; border-bottom:1px solid var(--ring); font-weight:700}
+    .card > .bd{padding:18px}
 
-        /* Upload Section */
-        .upload-section {
-            text-align: center;
-            margin-bottom: 30px;
-        }
+    /* Drop zone */
+    .drop{
+      border:2px dashed var(--ring); border-radius:14px; padding:22px; text-align:center; background:var(--panel);
+      transition:.15s ease-in-out; cursor:pointer;
+    }
+    .drop:hover{border-color:#94a3b8; background:#f1f5f9}
+    .drop input[type=file]{display:none}
+    .btn{
+      display:inline-flex; align-items:center; gap:8px; border:0; border-radius:10px; padding:10px 16px; cursor:pointer;
+      background:var(--orange); color:#fff; font-weight:700; box-shadow:0 4px 10px rgba(249,115,22,.25);
+      -webkit-text-stroke:.5px #000; text-shadow:0 1px 0 #000;
+      transition:transform .05s ease, filter .2s ease;
+    }
+    .btn:hover{filter:brightness(1.05)}
+    .btn:active{transform:translateY(1px)}
+    .btn.ghost{background:#475569}
+    .btn.ghost:hover{filter:brightness(1.08)}
+    .hint{color:var(--muted); font-size:12px; margin-top:8px}
 
-        .upload-section input[type="file"] {
-            display: none;
-        }
+    /* Preview table */
+    table{width:100%; border-collapse:separate; border-spacing:0; font-size:13px}
+    th,td{padding:8px 10px; border-bottom:1px solid #eef2f7}
+    th{background:#f8fafc; text-align:left}
+    .badge{display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; background:#f1f5f9; border:1px solid #e5e7eb}
+    .badge.ok{background:#dcfce7; border-color:#bbf7d0; color:#065f46}
+    .badge.warn{background:#fff7ed; border-color:#fed7aa; color:#9a3412}
+    .badge.err{background:#fee2e2; border-color:#fecaca; color:#991b1b}
 
-        .upload-section .file-label {
-            display: inline-block;
-            background: #F97316; /* Orange buttons */
-            color: white;
-            padding: 12px 24px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            border: none;
-            text-shadow: 1px 1px 3px #000000; /* Black outline for text */
-        }
+    /* Controls */
+    .controls{display:flex; flex-wrap:wrap; gap:10px}
+    .switch{display:flex; align-items:center; gap:8px; background:#f8fafc; border:1px solid var(--ring); padding:8px 10px; border-radius:10px}
 
-        .upload-section .file-label:hover {
-            background: #FF6A13;
-        }
+    /* Column mapping */
+    .map-row{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px}
+    select, input[type=number]{width:100%; padding:10px 12px; border:1px solid var(--ring); border-radius:10px; background:#fff}
 
-        .file-info {
-            margin-top: 15px;
-            font-size: 0.9em;
-            color: #64748b;
-        }
+    /* Chart area */
+    .chart-card{height:520px}
+    canvas{height:100% !important; width:100% !important}
 
-        /* Chart Section */
-        .chart-container {
-            background: white;
-            padding: 20px;
-            margin-bottom: 30px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-            height: 500px;
-        }
-
-        /* Controls Section */
-        .controls-section {
-            background: #F9FAFB; /* Light background */
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-        }
-
-        .action-btn {
-            background: #64748b;
-            color: white;
-            padding: 10px 18px;
-            border-radius: 6px;
-            cursor: pointer;
-            margin: 10px;
-            text-shadow: 1px 1px 3px #000000;  /* Black outline for text */
-        }
-
-        .action-btn:hover {
-            background: #475569;
-        }
-
-        .action-btn.best {
-            background: #059669;
-        }
-
-        .action-btn.best:hover {
-            background: #047857;
-        }
-
-        .action-btn.worst {
-            background: #dc2626;
-        }
-
-        .action-btn.worst:hover {
-            background: #b91c1c;
-        }
-
-        /* Button active state */
-        .zoom-btn {
-            background: #475569;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9em;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            margin: 15px auto;
-            display: block;
-        }
-
-        .zoom-btn:hover {
-            background: #334155;
-        }
-
-        .zoom-btn.zoomed-in {
-            background: #059669;
-        }
-
-        .zoom-btn.zoomed-in:hover {
-            background: #047857;
-        }
-    </style>
+    @media (max-width:980px){ .grid{grid-template-columns:1fr} }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>EVC BESS Consultant</h1>
-            <p>Please upload CSV or xlsx file type only</p>
-        </div>
-
-        <!-- Upload Section -->
-        <div class="upload-section">
-            <input type="file" id="csvFile" accept=".csv,.xlsx">
-            <label for="csvFile" class="file-label">
-                📊 Choose File
-            </label>
-            <div class="file-info">
-                <p><strong>Supported formats:</strong> CSV, XLSX</p>
-            </div>
-        </div>
-
-        <!-- Chart Container -->
-        <div class="chart-container" id="chart-container">
-            <canvas id="chart"></canvas>
-        </div>
-
-        <!-- Controls Section -->
-        <div class="controls-section">
-            <h3>Controls</h3>
-            <button class="action-btn" onclick="applyPeakCapping()">Apply Peak Capping</button>
-            <button class="action-btn" onclick="showBestDay()">Show Best Day</button>
-            <button class="action-btn" onclick="showWorstDay()">Show Worst Day</button>
-        </div>
+  <!-- FULL-WIDTH ORANGE HEADER -->
+  <header class="hero">
+    <div class="hero-inner">
+      <h1 class="title">EVC BESS Consultant</h1>
+      <p class="subtitle">Please upload CSV or xlsx file type only</p>
     </div>
+  </header>
 
-    <script src="main.js"></script>
+  <main class="wrap">
+    <section class="grid">
+      <!-- LEFT: Upload + validation -->
+      <div class="card">
+        <div class="hd">Upload & Validate</div>
+        <div class="bd">
+          <label class="drop" id="dropzone">
+            <input id="fileInput" type="file" accept=".csv,.xlsx" />
+            <div style="display:flex; flex-direction:column; gap:10px; align-items:center;">
+              <div class="badge">Drag & drop file here</div>
+              <button type="button" class="btn" id="chooseBtn">📁 Choose File</button>
+              <div class="hint"><strong>Supported:</strong> CSV / XLSX • Max 10 MB</div>
+            </div>
+          </label>
+
+          <div id="fileMeta" style="margin-top:16px; display:none;">
+            <span class="badge" id="metaName"></span>
+            <span class="badge" id="metaSize"></span>
+            <span class="badge" id="metaType"></span>
+            <span class="badge" id="metaRows"></span>
+            <span class="badge" id="metaSheets" style="display:none;"></span>
+          </div>
+
+          <div style="margin-top:16px">
+            <div class="badge ok" id="mapStatus" style="display:none;">Columns detected</div>
+            <div class="badge warn" id="mapNeed" style="display:none;">Please map columns below</div>
+            <div class="map-row" id="mapper" style="display:none;">
+              <div>
+                <label>Map Date/Day column</label>
+                <select id="mapDate"></select>
+              </div>
+              <div>
+                <label>Map Time column</label>
+                <select id="mapTime"></select>
+              </div>
+              <div>
+                <label>Map Power (kW) column</label>
+                <select id="mapPower"></select>
+              </div>
+              <div style="align-self:end;">
+                <button class="btn" id="applyMap">Apply mapping</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:18px">
+            <div class="hd" style="border:none;padding:0 0 10px 0">Quick Preview</div>
+            <div class="card" style="border:1px dashed #e2e8f0">
+              <div class="bd" style="max-height:220px; overflow:auto;">
+                <table id="previewTable"></table>
+              </div>
+            </div>
+          </div>
+
+          <details style="margin-top:16px">
+            <summary class="badge">Parsing criteria</summary>
+            <div class="bd" style="padding:12px 0 0 0">
+              <ul style="margin:0 0 8px 18px">
+                <li><b>File types</b>: .csv or .xlsx (first row is header). Max size 10 MB.</li>
+                <li><b>Required columns</b> (or mapped equivalents):
+                  <code>Date</code>/<code>Day</code>, <code>Time</code>/<code>Hour</code>,
+                  <code>Power_kW</code> (aliases: <code>Power</code>, <code>Load</code>, <code>Demand</code>, <code>kW</code>, <code>Power (kW)</code>).
+                </li>
+                <li><b>Date formats</b>: <code>YYYY-MM-DD</code>, <code>DD/MM/YYYY</code>, or a day label (e.g., “2024-08-12” or “Day 1”).</li>
+                <li><b>Time formats</b>: <code>HH:mm</code> (24h), <code>h:mm AM/PM</code>, or decimal hours (e.g., 14.5).</li>
+                <li><b>Power values</b>: numeric in kW. Negatives are flagged, blanks skipped.</li>
+                <li>For Excel, the first sheet is read by default (you’ll be asked if multiple sheets exist).</li>
+              </ul>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <!-- RIGHT: Chart + controls -->
+      <div class="card chart-card">
+        <div class="hd">Load Profiles (interactive)</div>
+        <div class="bd" style="height:calc(100% - 48px); display:flex; flex-direction:column">
+          <div class="controls" style="margin-bottom:8px">
+            <button class="btn ghost" id="btnZoom">🔍 Zoom 14:00–22:00</button>
+            <button class="btn ghost" id="btnBest">↓ Best Day</button>
+            <button class="btn ghost" id="btnWorst">↑ Worst Day</button>
+            <span class="switch"><input type="checkbox" id="y0" checked /> <label for="y0">Start Y from 0</label></span>
+          </div>
+          <div style="flex:1; min-height:280px"><canvas id="chart"></canvas></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="main.js" defer></script>
 </body>
 </html>
