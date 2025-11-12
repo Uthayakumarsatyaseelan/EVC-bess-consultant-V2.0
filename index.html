@@ -3,17 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BESS Load Profile Optimizer</title>
+    <title>EVC BESS Consultant</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
-        /* Add your styles here */
+        /* Basic reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body styling */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f8fafc;
-            margin: 0;
+            background: #ffffff;  /* White background */
             padding: 20px;
         }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -22,28 +29,81 @@
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
+
+        /* Header */
         .header {
-            background: #1e293b;
+            background: #F97316;  /* Orange header */
             color: white;
             text-align: center;
             padding: 30px;
+            border-radius: 8px 8px 0 0;
         }
+
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px #000000;  /* Black outline for text */
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+            text-shadow: 1px 1px 3px #000000;  /* Black outline for text */
+        }
+
+        /* Upload Section */
         .upload-section {
             text-align: center;
             margin-bottom: 30px;
         }
+
+        .upload-section input[type="file"] {
+            display: none;
+        }
+
+        .upload-section .file-label {
+            display: inline-block;
+            background: #F97316; /* Orange buttons */
+            color: white;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border: none;
+            text-shadow: 1px 1px 3px #000000; /* Black outline for text */
+        }
+
+        .upload-section .file-label:hover {
+            background: #FF6A13;
+        }
+
+        .file-info {
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #64748b;
+        }
+
+        /* Chart Section */
         .chart-container {
             background: white;
             padding: 20px;
             margin-bottom: 30px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
             height: 500px;
         }
+
+        /* Controls Section */
         .controls-section {
-            background: #f8fafc;
+            background: #F9FAFB; /* Light background */
             padding: 20px;
             border-radius: 8px;
             border: 1px solid #e2e8f0;
         }
+
         .action-btn {
             background: #64748b;
             color: white;
@@ -51,28 +111,82 @@
             border-radius: 6px;
             cursor: pointer;
             margin: 10px;
+            text-shadow: 1px 1px 3px #000000;  /* Black outline for text */
         }
+
         .action-btn:hover {
             background: #475569;
+        }
+
+        .action-btn.best {
+            background: #059669;
+        }
+
+        .action-btn.best:hover {
+            background: #047857;
+        }
+
+        .action-btn.worst {
+            background: #dc2626;
+        }
+
+        .action-btn.worst:hover {
+            background: #b91c1c;
+        }
+
+        /* Button active state */
+        .zoom-btn {
+            background: #475569;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            margin: 15px auto;
+            display: block;
+        }
+
+        .zoom-btn:hover {
+            background: #334155;
+        }
+
+        .zoom-btn.zoomed-in {
+            background: #059669;
+        }
+
+        .zoom-btn.zoomed-in:hover {
+            background: #047857;
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Header -->
         <div class="header">
-            <h1>BESS Load Profile Optimizer</h1>
-            <p>Upload your CSV file and interactively visualize the load profiles</p>
+            <h1>EVC BESS Consultant</h1>
+            <p>Please upload CSV or xlsx file type only</p>
         </div>
 
+        <!-- Upload Section -->
         <div class="upload-section">
-            <input type="file" id="csvFile" accept=".csv">
-            <button class="action-btn" onclick="processCSV()">Upload CSV</button>
+            <input type="file" id="csvFile" accept=".csv,.xlsx">
+            <label for="csvFile" class="file-label">
+                📊 Choose File
+            </label>
+            <div class="file-info">
+                <p><strong>Supported formats:</strong> CSV, XLSX</p>
+            </div>
         </div>
 
+        <!-- Chart Container -->
         <div class="chart-container" id="chart-container">
             <canvas id="chart"></canvas>
         </div>
 
+        <!-- Controls Section -->
         <div class="controls-section">
             <h3>Controls</h3>
             <button class="action-btn" onclick="applyPeakCapping()">Apply Peak Capping</button>
