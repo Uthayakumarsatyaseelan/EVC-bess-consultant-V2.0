@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BESS Load Profile Optimizer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        /* Add your styles here */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8fafc;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        .header {
+            background: #1e293b;
+            color: white;
+            text-align: center;
+            padding: 30px;
+        }
+        .upload-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .chart-container {
+            background: white;
+            padding: 20px;
+            margin-bottom: 30px;
+            height: 500px;
+        }
+        .controls-section {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .action-btn {
+            background: #64748b;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .action-btn:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>BESS Load Profile Optimizer</h1>
+            <p>Upload your CSV file and interactively visualize the load profiles</p>
+        </div>
+
+        <div class="upload-section">
+            <input type="file" id="csvFile" accept=".csv">
+            <button class="action-btn" onclick="processCSV()">Upload CSV</button>
+        </div>
+
+        <div class="chart-container" id="chart-container">
+            <canvas id="chart"></canvas>
+        </div>
+
+        <div class="controls-section">
+            <h3>Controls</h3>
+            <button class="action-btn" onclick="applyPeakCapping()">Apply Peak Capping</button>
+            <button class="action-btn" onclick="showBestDay()">Show Best Day</button>
+            <button class="action-btn" onclick="showWorstDay()">Show Worst Day</button>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>
